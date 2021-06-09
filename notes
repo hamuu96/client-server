@@ -1,0 +1,26 @@
+client
+Done -> connect to server -> welcome message -> would you like to proceed
+Done -> print out of items in database
+Done -> prompt user to select items they would like to buy
+--buying -- 
+item to buy : quantity
+insert:quantity to list
+--checkout--
+ask for payment method
+ask for account no
+date 
+password
+print items 
+thank you message
+
+######server######
+--connection
+Done -> accept connection
+Done -> print message
+--database
+Done -> select items from database -> display to user
+during checkout -> take items from client list - inventory in tables
+
+--------------
+
+ 
