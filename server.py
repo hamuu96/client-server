@@ -22,8 +22,11 @@ class server:
     ADDRESS = (add, port)
     server.bind(ADDRESS)
 
+    #instantiating database class
     db = database.connection()
+    #delete table items for each user before inserting items to database...prevent multiple insertion of items to database
     db.truncate()
+    #insert items to database
     db.insert()
 
     #handle connections
@@ -34,72 +37,67 @@ class server:
         while connection:
             #receive data from client but not decoded
             recv = conn.recv(4096)
-
+            #if message received
             if recv :
+                #decode message
                 self.received_msg = recv.decode(self.FORMAT)
-                if self.received_msg =="Y":
-                    conn.send(b'Welcome to the vending machine. \npress any key to continue: ')
-                    # conn.sendall(b"'itemid', 'item', 'price', 'Quantity'\n")
-                    conn.sendall(str([ self.display(conn)]).encode())
-                    # self.display(conn)
-                    conn.send(b'\nHere are the menu items \n')
-                    conn.send(b'\nPlease select an item you would like to buy:')
-                    conn.send(b'\n')
-                    items = []
-                if self.received_msg.isdigit():
-                    purchased_items = self.insert_cart(conn)
-                    items.append(purchased_items)
-                    continue
-                else:
-                    if self.received_msg == 'Q':
-                        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
-                        connection = False
-                        conn.send(b'[+] Thank you see you next time')
-                    print(f'{addr} : {self.received_msg} ' )
-                    conn.send(str(items).encode())
-                    conn.send("\nMsg received".encode(self.FORMAT))
+                self.menu(conn,self.received_msg)
+                # continue
+                
+                
+
+
+                
                     
         conn.close()
-        
+    
+    def menu(self,conn,message):
+        items = []
+        checkout = ['c','checkout']
+        selection = message
+        if selection.lower() == 'y':
+            conn.send(b'[+] vending machine items\n[+] press any key to display items\n')
+            conn.sendall(str([ self.display(conn)]).encode())
+        elif selection.isdigit():
+            purchased_items = self.insert_cart(conn)
+            items.append(purchased_items)
+        elif selection.lower() in checkout:
+            conn.send(b'[+] proceeding to checkout...\n[+] please enter "credit card number", "Full Name", "Card CCV", "Date of Expiration"\n')
+            print(selection)
+        elif len(selection) >=5:
+            card_info = selection.split()
+            print(card_info)
+            if len(card_info) != 5:
+                conn.send(b'please fill the card information properly\n[+] please enter "credit card number", "Full Name", "Card CCV", "Date of Expiration"\n')
+            else:
+                conn.send(str(card_info).format(self.FORMAT).encode())
+
+            
+    #display database table items
     def display(self,conn):
-        #send data
-        # result = self.db.show_items()
         items = self.db.show_items()
-      
-        results = [x for x in items]
-        #iterate through items in selected table
-        
         values = [''.join(str(items[i])) for i in range(len(items))]
-        printable_items = [ values[_] for _ in range(len(values))]
-        
+        conn.send(b'ItemID  Name   Price  Quantity\n')
         for i in values:
             conn.send(str(i+'\n').encode())
-
-        # for i in range(len(result)):
-        #     conn.send(str(('id: ', result[i][0],'name: ', result[i][1] ,' price:',result[i][2],'quantity: ', result[i][3] )).encode())
-            # print('id: ', result[i][0],'name: ', result[i][1] ,' price:',result[i][2],'quantity: ', result[i][3] )
-        # conn.send(b'\n[+] item added to shopping bag.\n')
-        # conn.send(b'\nPlease select an item you would like to buy: \n')
-        # for i in result:
-    
-        #     print(i)
+    #insert selected items to shopping cart
     def insert_cart(self, conn):
         result  = self.db.select(self.received_msg)
         conn.send(str('{}\nitem added to cart'.format(result)).encode())
-
         return result
-        
-        # conn.send(b'\nitem added to bag')
-
-   
-        
-        
-
+    #gather user payment infomation for checkout
+    def checkout(self,conn, customer_data):
+        #ask for name
+        conn.send(b'\nThank you..proceeding to checkout\nplease enter your name,\tcredit card number , account no , ccv number and expiration date: ')
+        customer = []
+        customer.append(customer_data.split())
+        return customer
     def start(self):
     
         #listen for connections
         self.server.listen()
         print(f'[+] server is listening on {self.add, self.port}')
+        #allow multiple user connections
         while True:
             #accept connections
             conn, addr = self.server.accept()
