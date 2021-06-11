@@ -21,12 +21,7 @@ while True:
 
         message = client.recv(1028)
         print(message.decode(FORMAT))
-        
-        #----able to get the whole menu but cannot to user to input after that---#
-        # for i in range(3):
-        #     menu = client.recv(1028)
-        #     print(menu.decode(FORMAT))
-        #     continue
+
     else:
         client.close()
         print('Thank you!')
