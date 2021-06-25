@@ -1,17 +1,21 @@
-1import mysql.connector
+import mysql.connector
+import create_database
 
 
 ######
-# how to connect without database selected, then create database
+# change database 
 
 #####
 
-
 class connection:
+    test = create_database.createdb()
     create_databse = 'CREATE DATABASE IF NOT EXISTS VENDING_MACHINE;'
     select = 'SELECT * FROM DATABASE'
     check = 0
     database = 'VENDING_MACHINE'
+    no_of_database_items = 50
+
+  
 
     def __init__(self):
         self.db = mysql.connector.connect(
@@ -38,10 +42,10 @@ class connection:
     def insert(self):
         self.sql = 'INSERT INTO items (name , price, quantity) VALUES (%s, %s, %s)'
         values = [
-            ('coca cola', '20','10'),
-            ('Pepsi', '25','20'),
-            ('chocolate', '15','40'),
-            ('crips', '5','12'),
+            ('coca cola', '20','{}'.format(self.no_of_database_items)),
+            ('Pepsi soda','25','{}'.format(self.no_of_database_items)),
+            ('chocolate', '15','{}'.format(self.no_of_database_items)),
+            ('seven up','5','{}'.format(self.no_of_database_items)),
             
         ]
 
@@ -53,38 +57,37 @@ class connection:
     def show_items(self):
         self.show_items_sql = 'SELECT * FROM items;'
         self.cursors.execute(self.show_items_sql)
-        result = self.cursors.fetchall()
-
-        # # mycursor = self.db.cursor()
-
-        # self.cursors.execute('select * from items')
-        # result = self.cursors.fetchall()
         
-
-        return result 
+        return self.cursors.fetchall()
+ 
     
     def truncate(self):
         self.truncate_sql = 'truncate table items;'
         self.cursors.execute(self.truncate_sql)
-        result = self.cursors.fetchall()
+        delete_table = self.cursors.fetchall()
         print('[+] table truncated')
 
-        return result 
+        return delete_table 
     def select(self, message):
         self.select_items_sql = 'SELECT itemid, name, price FROM items where itemid = {} '.format(int(message))
         self.cursors.execute(self.select_items_sql)
-        result = self.cursors.fetchall()
+        seleted_items = self.cursors.fetchall()
         
-        return result 
+        return seleted_items 
+    def update_table(self,items):
+        keys = list(items.keys())
+        # print(len(keys)Q
+        for i in range(1,len(keys)+len(keys)):
+            if str(i) not in keys:
+                continue
+            remaining_total = self.no_of_database_items - int(items[str(i)])
+            self.update_sql = "UPDATE items SET quantity = {} WHERE itemid = {}".format(remaining_total,i)
+            self.cursors.execute(self.update_sql)
+            self.db.commit()
+            # print("updated quantity to  = {} where  itemid = {}".format(remaining_total,i))
+
     
    
-# test = connection()
-# test.connect()
-# test.database_setup()
-# test.show_database()
-# test.create_table()
-# test.insert_items()
-# test.connect()
 
 
         
