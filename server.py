@@ -2,17 +2,13 @@ import socket
 import threading
 from collections import Counter
 from mysql.connector import connect
-import database
+from tkinter import *
+import database  #import database file , python searches for import file first from the current working directory before searching other paths
 
 
-####issues###
-# view items does not change 
-#issue with quit 
-#########
 class server:
     #global variables
-    items =[]
-    check = items
+    items =[]  #variable to store purchased items 
     user_choice = []
     FORMAT = 'utf-8'
 
@@ -71,22 +67,20 @@ class server:
         elif selection.isdigit():
             try:
                 #check if items selected is not in menu
-                if int(selection) > len(self.database_items):
+                if int(selection) > len(self.database_items): 
                     conn.send(b'\n[+] Please select items in the menu please!')
                 else:
+                    # conn.sendall(str([ self.display(conn)]).encode())
                     self.user_choice.append(selection)
                     purchased_items = self.insert_cart(conn) #return value from insert cart function
                     self.items.append(purchased_items) #list with user data
-                    self.check +self.items #update the cart with each user insert
-                    #list of user choices
                     self.user_cunter = Counter(self.user_choice) #check how many times an items has been selected
             except AttributeError:
                 conn.send(b'[+] Press Y to interact with vending machine!')
         
         #view items in client shopping cart
         elif selection.lower() == 'v' or selection.lower() == 'view':
-            self._view_Purchased_items(conn,self.check)  #execution of view cart function
-
+            self._view_Purchased_items(conn,self.items)  #execution of view cart function
         #allow user to checkout and pay
         elif selection.lower() in checkout: #check if user input is in checkout list (contains certain key words)
             conn.send(b'\n[+] proceeding to checkout...\n[+] please enter "credit card number", "Full Name", "Card CCV", "Date of Expiration"\n')
@@ -103,18 +97,17 @@ class server:
                 for i in range(len(self.items)): 
                     Total_price+=self.items[i][0][2] #add price of items in the cart
 
-                # conn.send(str('\n[+] card information: {}\n[+] Items in Bag:{}\n[+] Total price: {}\n'.format(card_info, self.items,Total_price)).encode())
+                #ask user to enter client card information for checkout
                 conn.send(str('\n[+] card information: {}\n[+] Items in Bag:{}\n[+] Total price: {}\n\n[+] To continue shopping press Y or y '.format(card_info, self.items,Total_price)).encode())
                 self.db.update_table(self.user_cunter)  #update database after user checks out
                 
                 #save every transaction in a text file 
                 with open ('transactions.txt', 'a') as f:
                     f.write('\n[+] card information: {}\n[+] Items in Bag:{}\n[+] Total price: {}\n '.format(card_info, self.items,Total_price))
-                #after every transaction cart, user_choices are reset to 0
+                #after every transaction cart, user choices are reset to 0
                 self.items = []
                 self.user_choice = []
                 self.user_cunter  = {}
-                # return False
         #exit if user input is Q
         elif selection in exit:
                 conn.send(b'\n[+]Connection to server closed\n[+]Thank you for shopping with us, sorry we could not help you with what you needed!\n[+]Press Q or q to exit application')
@@ -126,7 +119,7 @@ class server:
     #display database table items
     def display(self,conn):
         self.database_items = self.db.show_items() #execution of show items method
-        values = [''.join(str(self.database_items[i])) for i in range(len(self.database_items))]
+        values = [''.join(str(self.database_items[i])) for i in range(len(self.database_items))] #iterate through database items
         conn.send(b'\n[+]To buy item press itemID to add to cart\n\nItemID  Name   Price  Quantity\n')
         #iterate through each item in database and print as a menu
         for i in values:
@@ -136,31 +129,33 @@ class server:
         result  = self.db.select(self.received_msg) #select item from database 
         conn.send(str('{}\nitem added to cart'.format(result)).encode())
         return result
+
     #gather user payment infomation for checkout
     def checkout(self,conn, customer_data):
         #ask for name
         conn.send(b'\nThank you..proceeding to checkout\nplease enter your name,\tcredit card number , account no , ccv number and expiration date: ')
-        customer = []
+        customer = [] # store information provided to this list
         customer.append(customer_data.split()) #add user information to list
         return customer
     def _view_Purchased_items(self,conn,purchased_items):
-        conn.send(str(purchased_items).encode())
-        purchased_items = []
+        conn.send(str(purchased_items).encode()) # send list of client items in cart
 
 
     def start(self):
         #listen for connections
-        self.server.listen()
+        self.server.listen() 
         print(f'[+] server is listening on {self.add, self.port}')
         #allow multiple user connections
         while True:
             #accept connections
-            conn, addr = self.server.accept()
-            thread = threading.Thread(target=self.handle, args=(conn, addr))
-            thread.start()
+            conn, addr = self.server.accept() #accept client connection to server
+            thread = threading.Thread(target=self.handle, args=(conn, addr)) # create thread
+            thread.start() #start thread for each client
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
         
 
 if __name__ == "__main__":
     test = server()
     test.start()
+
+    

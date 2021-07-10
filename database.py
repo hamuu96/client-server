@@ -8,16 +8,18 @@ import create_database
 #####
 
 class connection:
+    #global variables
     test = create_database.createdb()
     create_databse = 'CREATE DATABASE IF NOT EXISTS VENDING_MACHINE;'
-    select = 'SELECT * FROM DATABASE'
+    select = 'SELECT * FROM DATABASE' 
     check = 0
-    database = 'VENDING_MACHINE'
-    no_of_database_items = 50
+    database = 'VENDING_MACHINE' #database name
+    no_of_database_items = 50 #no of database items
 
   
 
     def __init__(self):
+        #connection to database
         self.db = mysql.connector.connect(
             host='localhost',
             username = 'root',
@@ -29,23 +31,28 @@ class connection:
             # self.db.database = 'VENDING_MACHINE'
             self.check = 1
         
-            self.cursors  = self.db.cursor()
-            self.cursors.execute(self.create_databse)
+            self.cursors  = self.db.cursor() #cursor object creation, used to execute mysql commands
+            self.cursors.execute(self.create_databse) #sql command execution
             print('[+] successfully created database')
-            # self.check = 0  
 
             self.createTable = "CREATE TABLE IF NOT EXISTS items (itemid INT AUTO_INCREMENT PRIMARY KEY, name varchar(20), price INT(5), quantity int )"
-            self.tables = self.db.cursor()
+            self.tables = self.db.cursor() #cursor object creation, used to execute mysql commands
             self.tables.execute(self.createTable)
             print('[+] Tables creation successful')
-            
+    
+    #insert items in database
     def insert(self):
         self.sql = 'INSERT INTO items (name , price, quantity) VALUES (%s, %s, %s)'
         values = [
-            ('coca cola', '20','{}'.format(self.no_of_database_items)),
-            ('Pepsi soda','25','{}'.format(self.no_of_database_items)),
-            ('chocolate', '15','{}'.format(self.no_of_database_items)),
-            ('seven up','5','{}'.format(self.no_of_database_items)),
+            ('Coca cola','20','{}'.format(self.no_of_database_items)),
+            ('   Pepsi ','25','{}'.format(self.no_of_database_items)),
+            ( 'Mask','     15','{}'.format(self.no_of_database_items)),
+            (' Seven up','5','{}'.format(self.no_of_database_items)),
+            ('Ice cream','5','{}'.format(self.no_of_database_items)),
+            (' Chips','   5','{}'.format(self.no_of_database_items)),
+            (' Water','   5','{}'.format(self.no_of_database_items)),
+            (' Kitkat','  5','{}'.format(self.no_of_database_items)),
+            (' Oreo','    5','{}'.format(self.no_of_database_items))
             
         ]
 
@@ -54,11 +61,12 @@ class connection:
         self.db.commit()
         print('[+] items added to table')
     
+    #
     def show_items(self):
         self.show_items_sql = 'SELECT * FROM items;'
         self.cursors.execute(self.show_items_sql)
-        
-        return self.cursors.fetchall()
+        database_items = self.cursors.fetchall()
+        return database_items
  
     
     def truncate(self):

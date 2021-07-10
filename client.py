@@ -1,4 +1,26 @@
 import socket
+from tkinter import *
+
+
+class gui:
+    def __init__(self,master) -> None:
+        self.master = master
+
+        #frames
+        top = Frame(master)
+        bottom = Frame(master, )
+        #frame customization
+        top.grid(row=0)
+        bottom.grid(row=1)
+
+        #user interface variables
+        self.display = Text(top,height=20, width=38)
+        self.display.grid(column=0, row=0, columnspan=4,pady=10)
+        self.enter = Button(top,text='Enter')
+        self.enter.grid(column=1)
+        self.text = Entry(bottom, width=28)
+        self.text.grid(column=0, row=1, columnspan=4)
+
 
 
 class client:
@@ -32,7 +54,8 @@ class client:
                         for i in self.shopping_bag: #
                             print(i)
                         
-
+                        self.shopping_bag = []
+                        self.test = []
                     else:
                         #receive data from server and decode to string
                         client.send(bytes(message, FORMAT))
@@ -47,6 +70,9 @@ class client:
                 break
 def main():
     test = client()
+   
 
 if __name__ == '__main__':
     main()
+
+   
